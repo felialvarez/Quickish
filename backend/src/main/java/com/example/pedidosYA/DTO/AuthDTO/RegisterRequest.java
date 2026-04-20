@@ -1,0 +1,116 @@
+package com.example.pedidosYA.DTO.AuthDTO;
+
+import com.example.pedidosYA.Model.TipoVehiculo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+public class RegisterRequest {
+    @NotBlank(message = "El usuario es obligatorio")
+    @Size(min = 3, max = 50, message = "El usuario debe tener entre 3 y 50 caracteres")
+    private String usuario;
+
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")
+    private String contrasenia;
+
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El formato del email no es válido")
+    private String email;
+
+    @NotBlank(message = "El rol es obligatorio")
+    @Pattern(regexp = "CLIENTE|ADMIN|RESTAURANTE|REPARTIDOR", flags = Pattern.Flag.CASE_INSENSITIVE, message = "El rol debe ser CLIENTE, RESTAURANTE o REPARTIDOR")
+    private String rol;
+
+    @Size(min = 3, max = 100, message = "El nombre y apellido debe tener entre 3 y 100 caracteres")
+    private String nombreYapellido;
+
+    @Size(min = 3, max = 100, message = "El nombre del restaurante debe tener entre 3 y 100 caracteres")
+    private String nombreRestaurante;
+
+    private String horaApertura;
+    private String horaCierre;
+
+    private String pais;
+
+    private String tipoVehiculo;
+
+    public String getHoraApertura() {
+        return horaApertura;
+    }
+
+    public void setHoraApertura(String horaApertura) {
+        this.horaApertura = horaApertura;
+    }
+
+    public String getHoraCierre() {
+        return horaCierre;
+    }
+
+    public void setHoraCierre(String horaCierre) {
+        this.horaCierre = horaCierre;
+    }
+
+    public String getPais() {
+        return pais;
+    }
+
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
+
+    @JsonIgnore  // No usar este getter en serialización/deserialización JSON
+    public TipoVehiculo getTipoVehiculo() {
+        if (tipoVehiculo == null || tipoVehiculo.isBlank()) {
+            return null;
+        }
+        try {
+            return TipoVehiculo.valueOf(tipoVehiculo.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Tipo de vehículo inválido: " + tipoVehiculo);
+        }
+    }
+
+    @JsonProperty("tipoVehiculo")  // Usar este setter para deserialización JSON
+    public void setTipoVehiculo(String tipoVehiculo) {
+        this.tipoVehiculo = tipoVehiculo;
+    }
+
+    // Getter adicional para obtener el String directamente
+    @JsonProperty("tipoVehiculo")  // Usar este getter para serialización JSON
+    public String getTipoVehiculoString() {
+        return tipoVehiculo;
+    }
+
+    public String getUsuario() { return usuario; }
+    public void setUsuario(String usuario) { this.usuario = usuario; }
+
+    public String getContrasenia() { return contrasenia; }
+    public void setContrasenia(String contrasenia) { this.contrasenia = contrasenia; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getRol() { return rol; }
+    public void setRol(String rol) { this.rol = rol; }
+
+    public String getNombreYapellido() {
+        return nombreYapellido;
+    }
+
+    public void setNombreYapellido(String nombreYapellido) {
+        this.nombreYapellido = nombreYapellido;
+    }
+
+    public String getNombreRestaurante() {
+        return nombreRestaurante;
+    }
+
+    public void setNombreRestaurante(String nombreRestaurante) {
+        this.nombreRestaurante = nombreRestaurante;
+    }
+
+}

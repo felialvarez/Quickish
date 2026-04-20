@@ -1,0 +1,143 @@
+<app-header></app-header>
+
+<div class="content">
+  <div class="container">
+    <h1>Pedidos del Restaurante</h1>
+    
+    <div class="contenido-principal">
+      <div class="pedidos-lista">
+        @if (pedidos().length === 0) {
+          <div class="mensaje-vacio">
+            <p>Aún no hay pedidos</p>
+          </div>
+        }
+        
+        @for (pedido of pedidos(); track pedido.id) {
+          <div class="pedido-card"
+               [class.seleccionado]="pedidoSeleccionado()?.id === pedido.id"
+               (click)="verDetalle(pedido)">
+          <div class="pedido-header">
+            <h3>Pedido #{{ pedido.id }}</h3>
+            <span class="estado" [class]="pedido.estado.toLowerCase()">
+              {{ pedido.estado }}
+            </span>
+          </div>
+          <div class="pedido-info">
+            <p><strong>Fecha:</strong> {{ pedido.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+            <p><strong>Total:</strong> ${{ pedido.total }}</p>
+            @if (pedido.repartidor) {
+              <p class="repartidor-asignado">
+                <strong>Repartidor:</strong> {{ pedido.repartidor.nombreYapellido }}
+              </p>
+            }
+          </div>
+          </div>
+        }
+      </div>
+
+      @if (pedidoSeleccionado()) {
+      <div class="detalles-pedido">
+      <div class="detalles-header">
+        <h2>Detalles del Pedido #{{ pedidoSeleccionado()!.id }}</h2>
+        <button class="btn-cerrar" (click)="cerrarDetalle()">✕</button>
+      </div>
+      
+      <div class="detalles-contenido">
+        <div class="info-seccion">
+          <h3>Información del Pedido</h3>
+          <div class="info-grid-detalle">
+            <div class="info-row">
+              <strong>Fecha:</strong>
+              <span>{{ pedidoSeleccionado()!.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="info-row">
+              <strong>Estado:</strong>
+              <span class="estado" [class]="pedidoSeleccionado()!.estado.toLowerCase()">
+                {{ pedidoSeleccionado()!.estado }}
+              </span>
+            </div>
+            <div class="info-row">
+              <strong>Total:</strong>
+              <span class="total-valor">${{ pedidoSeleccionado()!.total }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (pedidoSeleccionado()!.repartidor) {
+          <div class="info-seccion repartidor-seccion">
+            <h3>🚴 Información del Repartidor</h3>
+            <div class="info-grid-detalle">
+              <div class="info-row">
+                <strong>Nombre:</strong>
+                <span>{{ pedidoSeleccionado()!.repartidor!.nombreYapellido }}</span>
+              </div>
+              <div class="info-row">
+                <strong>Email:</strong>
+                <span>{{ pedidoSeleccionado()!.repartidor!.email }}</span>
+              </div>
+              <div class="info-row">
+                <strong>Vehículo:</strong>
+                <span>{{ pedidoSeleccionado()!.repartidor!.tipoVehiculo }}</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="productos-lista">
+          <h3>Productos:</h3>
+          <ul>
+            @for (detalle of pedidoSeleccionado()?.detalles || []; track detalle.nombreProducto) {
+              <li>{{ detalle.cantidad }}x {{ detalle.nombreProducto }} - ${{ detalle.precioUnitario }}</li>
+            }
+          </ul>
+        </div>
+
+        <div class="acciones">
+          <h3>Cambiar estado:</h3>
+          <button (click)="seleccionarEstado('PREPARACION')" 
+                  [class.seleccionado-estado]="estadoNuevo() === 'PREPARACION'"
+                  [disabled]="pedidoSeleccionado()!.estado === 'PREPARACION' || 
+                              pedidoSeleccionado()!.estado === 'ENVIADO' || 
+                              pedidoSeleccionado()!.estado === 'ENTREGADO'">
+            En preparación
+          </button>
+          <button (click)="seleccionarEstado('ENTREGADO')"
+                  [class.seleccionado-estado]="estadoNuevo() === 'ENTREGADO'"
+                  [disabled]="pedidoSeleccionado()!.estado === 'ENTREGADO'">
+            Entregado
+          </button>
+          <button (click)="seleccionarEstado('CANCELADO')"
+                  [class.seleccionado-estado]="estadoNuevo() === 'CANCELADO'">
+            Cancelado
+          </button>
+          
+          @if (estadoNuevo()) {
+            <button class="btn-confirmar" 
+                    (click)="confirmarCambio()">
+                  Confirmar cambio
+            </button>
+          }
+        </div>
+      </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación para marcar como entregado -->
+@if (mostrarConfirmacionEntregado()) {
+  <div class="modal-overlay-entregado">
+    <div class="modal-content-entregado">
+      <h2>⚠️ Confirmar Entrega</h2>
+      <p>¿Estás seguro de que deseas marcar este pedido como <strong>ENTREGADO</strong>?</p>
+      <p class="advertencia">Esta acción quitará el pedido de la lista de pedidos activos.</p>
+      <div class="modal-acciones">
+        <button class="btn-cancelar" (click)="cancelarEntregado()">Cancelar</button>
+        <button class="btn-confirmar-modal" (click)="confirmarEntregado()">Sí, Marcar como Entregado</button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-footer-restaurante></app-footer-restaurante>

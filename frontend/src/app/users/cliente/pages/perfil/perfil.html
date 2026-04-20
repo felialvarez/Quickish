@@ -1,0 +1,162 @@
+<app-header></app-header>
+<div class="content">
+  <div class="perfil-container">
+    <h2>Mi Perfil</h2>
+
+    <!-- Mensaje de error/éxito -->
+    @if (mensajeError && tipoMensaje) {
+    <div
+      class="alert-message"
+      [class.alert-success]="tipoMensaje === 'success'"
+      [class.alert-error]="tipoMensaje === 'error'"
+    >
+      <span class="alert-icon">{{ tipoMensaje === 'success' ? '✓' : '⚠' }}</span>
+      <span class="alert-text">{{ mensajeError }}</span>
+    </div>
+    } @if (usuario()) {
+    <p>
+      Bienvenido, <strong>{{ usuario()!.nombreYapellido }}</strong>
+    </p>
+    } @if (loading()) {
+    <div class="loading-section">
+      <div class="loading-spinner"></div>
+      <p>Cargando datos del perfil...</p>
+    </div>
+    } @else {
+    <div class="perfil-content">
+      <form class="perfil-form" [formGroup]="perfilForm" (ngSubmit)="onSubmit()">
+        <h3>Información Personal</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre completo *</label>
+            <input
+              type="text"
+              formControlName="nombre"
+              class="form-input"
+              placeholder="Ingresa tu nombre completo"
+              maxlength="30"
+            />
+            @if (perfilForm.get('nombre')?.invalid && perfilForm.get('nombre')?.touched) {
+            <small style="color: red">Nombre requerido (mínimo 3 caracteres)</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Usuario *</label>
+            <input
+              type="text"
+              formControlName="usuario"
+              class="form-input"
+              placeholder="Nombre de usuario"
+              maxlength="18"
+            />
+            @if (perfilForm.get('usuario')?.invalid && perfilForm.get('usuario')?.touched) {
+            <small style="color: red">Usuario requerido (solo letras y números)</small>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email *</label>
+          <input
+            type="email"
+            formControlName="email"
+            class="form-input"
+            placeholder="tu@email.com"
+            maxlength="100"
+          />
+          @if (perfilForm.get('email')?.invalid && perfilForm.get('email')?.touched) {
+          <small style="color: red">Email requerido y válido</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña Actual *</label>
+          <input
+            type="password"
+            formControlName="contrasenia"
+            class="form-input"
+            placeholder="Ingresa tu contraseña actual para verificar identidad"
+          />
+          @if (perfilForm.get('contrasenia')?.invalid && perfilForm.get('contrasenia')?.touched) {
+          <small style="color: red">Contraseña requerida (mínimo 6 caracteres)</small>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="loading()">
+            @if (loading()) { Guardando... } @else { Guardar Cambios }
+          </button>
+        </div>
+      </form>
+
+      <div class="quick-links">
+        <h3>Accesos Rápidos</h3>
+        <button class="link-card" (click)="navegarA('/cliente/direcciones')">
+          <div>
+            <h4>Mis Direcciones</h4>
+            <p>Gestiona tus direcciones de entrega</p>
+          </div>
+          <span class="flecha">→</span>
+        </button>
+        <button class="link-card" (click)="navegarA('/cliente/metodos-pago')">
+          <div>
+            <h4>Métodos de Pago</h4>
+            <p>Administra tus tarjetas</p>
+          </div>
+          <span class="flecha">→</span>
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+</div>
+
+<!-- Modal de confirmación -->
+@if (mostrarModalConfirmacion()) {
+<div class="modal-overlay" (click)="cancelarActualizacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirmar actualización</h3>
+      <button class="close-btn" (click)="cancelarActualizacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Estás seguro de que deseas actualizar tu perfil?</p>
+      <p class="modal-warning">Esta acción modificará tus datos personales.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-confirmar" (click)="confirmarActualizacion()">Confirmar</button>
+      <button class="btn-cancelar-modal" (click)="cancelarActualizacion()">Cancelar</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Modal de Alerta Genérico -->
+@if (mostrarModalAlerta) {
+<div class="modal-overlay" (click)="cerrarModalAlerta()">
+  <div
+    class="modal-content-alerta"
+    (click)="$event.stopPropagation()"
+    [class]="'modal-' + tipoAlerta"
+  >
+    <div class="modal-header-alerta">
+      <span class="modal-icon">
+        @if (tipoAlerta === 'success') { ✓ } @if (tipoAlerta === 'error') { ✗ } @if (tipoAlerta ===
+        'warning') { ⚠ } @if (tipoAlerta === 'info') { ℹ }
+      </span>
+      <h3>{{ tituloAlerta }}</h3>
+      <button class="close-modal-btn" (click)="cerrarModalAlerta()">×</button>
+    </div>
+    <div class="modal-body-alerta">
+      <p>{{ mensajeAlerta }}</p>
+    </div>
+    <div class="modal-actions-alerta">
+      <button class="btn-aceptar" (click)="cerrarModalAlerta()">Aceptar</button>
+    </div>
+  </div>
+</div>
+}
+
+<app-footer-cliente></app-footer-cliente>

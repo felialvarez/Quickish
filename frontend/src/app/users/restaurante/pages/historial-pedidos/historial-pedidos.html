@@ -1,0 +1,89 @@
+<app-header></app-header>
+
+<div class="content">
+  <div class="container">
+    <h1>Historial de Pedidos</h1>
+
+    <div class="contenido-principal">
+      <div class="pedidos-lista">
+        <div
+          *ngFor="let pedido of pedidos()"
+          class="pedido-card"
+          [class.seleccionado]="pedidoSeleccionado()?.id === pedido.id"
+          (click)="verDetalle(pedido)"
+        >
+          <div class="pedido-header">
+            <h3>Pedido #{{ pedido.id }}</h3>
+            <span class="estado" [class]="pedido.estado.toLowerCase()">
+              {{ pedido.estado }}
+            </span>
+          </div>
+          <div class="pedido-info">
+            <p><strong>Fecha:</strong> {{ pedido.fecha | date: 'dd/MM/yyyy HH:mm' }}</p>
+            <p><strong>Total:</strong> ${{ pedido.total }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="pedidoSeleccionado()" class="detalles-pedido">
+        <div class="detalles-header">
+          <h2>Detalles del Pedido #{{ pedidoSeleccionado()!.id }}</h2>
+          <button class="btn-cerrar" (click)="cerrarDetalle()">✕</button>
+        </div>
+
+        <div class="detalles-contenido">
+          <div class="info-seccion">
+            <h3>Información del Pedido</h3>
+            <div class="info-grid-detalle">
+              <div class="info-row">
+                <strong>Fecha:</strong>
+                <span>{{ pedidoSeleccionado()!.fecha | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="info-row">
+                <strong>Estado:</strong>
+                <span class="estado" [class]="pedidoSeleccionado()!.estado.toLowerCase()">
+                  {{ pedidoSeleccionado()!.estado }}
+                </span>
+              </div>
+              <div class="info-row">
+                <strong>Total:</strong>
+                <span class="total-valor">${{ pedidoSeleccionado()!.total }}</span>
+              </div>
+            </div>
+          </div>
+
+          @if (pedidoSeleccionado()!.repartidor) {
+            <div class="info-seccion repartidor-seccion">
+              <h3>🚴 Información del Repartidor</h3>
+              <div class="info-grid-detalle">
+                <div class="info-row">
+                  <strong>Nombre:</strong>
+                  <span>{{ pedidoSeleccionado()!.repartidor!.nombreYapellido }}</span>
+                </div>
+                <div class="info-row">
+                  <strong>Email:</strong>
+                  <span>{{ pedidoSeleccionado()!.repartidor!.email }}</span>
+                </div>
+                <div class="info-row">
+                  <strong>Vehículo:</strong>
+                  <span>{{ pedidoSeleccionado()!.repartidor!.tipoVehiculo }}</span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="productos-lista">
+            <h3>Productos:</h3>
+            <ul>
+              <li *ngFor="let detalle of pedidoSeleccionado()!.detalles">
+                {{ detalle.cantidad }}x {{ detalle.nombreProducto }} - ${{ detalle.precioUnitario }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer-restaurante></app-footer-restaurante>

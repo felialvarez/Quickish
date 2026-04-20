@@ -1,0 +1,86 @@
+<footer [class.inactive]="!repartidorEstadoService.activo()">
+  <div class="footer-contenido">
+    <div class="footer-seccion">
+      <h3>Quickish</h3>
+      <p>Plataforma de entregas rápidas y confiables</p>
+    </div>
+
+    <div class="footer-seccion">
+      <h4>Entregas</h4>
+      <ul>
+        <li><a [routerLink]="repartidorEstadoService.activo() ? '/repartidor' : null" [class.disabled]="!repartidorEstadoService.activo()">Panel Principal</a></li>
+        <li><a [routerLink]="repartidorEstadoService.activo() ? '/repartidor/pedidos-disponibles' : null" [class.disabled]="!repartidorEstadoService.activo()">Pedidos Disponibles</a></li>
+        <li><a [routerLink]="repartidorEstadoService.activo() ? '/repartidor/historial-entregas' : null" [class.disabled]="!repartidorEstadoService.activo()">Historial de Entregas</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-seccion">
+      <h4>Mi Cuenta</h4>
+      <ul>
+        <li><a routerLink="/repartidor/perfil">Mi Perfil</a></li>
+        <li><a [routerLink]="repartidorEstadoService.activo() ? '/repartidor/ver-pedido-actual' : null" [class.disabled]="!repartidorEstadoService.activo()">Pedido Actual</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-seccion">
+      <h4>Contacto</h4>
+      <p>📧 quickishfood&#64;gmail.com</p>
+      <p>📞 +54 9 (223) 545-1212</p>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2025 Quickish. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+<!-- Bottom navigation bar (solo mobile) -->
+<nav class="bottom-nav" [class.inactive]="!repartidorEstadoService.activo()">
+  <a
+    routerLink="/repartidor"
+    routerLinkActive="active"
+    class="bottom-nav-item"
+    aria-label="Inicio"
+  >
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Inicio</span>
+  </a>
+  <a
+    [routerLink]="repartidorEstadoService.activo() ? '/repartidor/pedidos-disponibles' : null"
+    routerLinkActive="active"
+    class="bottom-nav-item"
+    [class.disabled]="!repartidorEstadoService.activo()"
+    aria-label="Pedidos"
+  >
+    <span class="nav-icon">📦</span>
+    <span class="nav-label">Pedidos</span>
+  </a>
+  <a
+    [routerLink]="repartidorEstadoService.activo() ? '/repartidor/ver-pedido-actual' : null"
+    routerLinkActive="active"
+    class="bottom-nav-item"
+    [class.disabled]="!repartidorEstadoService.activo()"
+    aria-label="En Curso"
+  >
+    <span class="nav-icon">🚚</span>
+    <span class="nav-label">En Curso</span>
+  </a>
+  <a
+    routerLink="/repartidor/historial-entregas"
+    routerLinkActive="active"
+    class="bottom-nav-item"
+    aria-label="Historial"
+  >
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">Historial</span>
+  </a>
+  <a
+    routerLink="/repartidor/perfil"
+    routerLinkActive="active"
+    class="bottom-nav-item"
+    aria-label="Perfil"
+  >
+    <span class="nav-icon">👤</span>
+    <span class="nav-label">Perfil</span>
+  </a>
+</nav>

@@ -1,0 +1,51 @@
+:root{
+  --col-1: rgb(74, 20, 140);
+  --col-2: rgb(235, 231, 231);
+  --col-3: rgb(15, 15, 15);
+}
+
+html { 
+    box-sizing: border-box;
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+app-login, 
+app-registro, 
+app-perfil, 
+app-landing-page,
+app-direcciones,
+app-metodos-pago,
+app-ver-pedidos,
+app-ver-restaurante,
+app-realizar-resenia,
+app-gestion-menu,
+app-historial-pedidos,
+app-ver-perfil,
+app-ver-resenias ,
+app-menu-admin
+{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--col-2);
+    padding: 20px;
+}

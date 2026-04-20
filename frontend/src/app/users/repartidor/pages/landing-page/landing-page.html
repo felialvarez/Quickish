@@ -1,0 +1,175 @@
+<app-header></app-header>
+
+<!-- Vista de Estado Inactivo -->
+@if (!loading() && perfil() && !perfil()!.activo) {
+  <div class="inactive-overlay">
+    <div class="inactive-modal">
+      <div class="inactive-icon">🚫</div>
+      <h2>Estado Inactivo</h2>
+      <p>Tu cuenta está inactiva. Actívala para comenzar a recibir pedidos.</p>
+      <button class="btn-activar" (click)="activarCuenta()">Activar Cuenta</button>
+      <button class="btn-ir-perfil" (click)="irAlPerfil()">Ver Mi Perfil</button>
+    </div>
+  </div>
+}
+
+<!-- Modal de confirmación para activar cuenta -->
+@if (mostrarConfirmacionActivar()) {
+  <div class="modal-overlay-activar" (click)="cancelarActivacion()">
+    <div class="modal-content-activar" (click)="$event.stopPropagation()">
+      <div class="modal-header-activar">
+        <h3>Confirmar Activación</h3>
+        <button class="close-modal-btn" (click)="cancelarActivacion()">×</button>
+      </div>
+      <div class="modal-body-activar">
+        <p>¿Estás seguro de que deseas activar tu cuenta?</p>
+        <p class="hint-activar">
+          Al activar tu cuenta podrás empezar a recibir pedidos y trabajar como repartidor.
+        </p>
+      </div>
+      <div class="modal-actions-activar">
+        <button
+          class="btn-confirmar-activar"
+          (click)="confirmarActivacion()"
+          [disabled]="activando()"
+        >
+          {{ activando() ? 'Activando...' : 'Sí, Activar' }}
+        </button>
+        <button
+          class="btn-cancelar-activar"
+          (click)="cancelarActivacion()"
+          [disabled]="activando()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Vista Normal (solo si está activo) -->
+@if (!loading() && perfil() && perfil()!.activo) {
+  <div class="content">
+    <div class="welcome-section">
+      <h2>¡Bienvenido Repartidor!</h2>
+      <p>Administra tus entregas y optimiza tu trabajo</p>
+    </div>
+
+    <div class="dashboard">
+      <!-- Card de Disponibilidad -->
+      <div class="disponibilidad-card">
+        <h3>Estado de Disponibilidad</h3>
+        @if (perfil(); as p) {
+          <div class="estado-info">
+            <p class="estado-label">Actualmente:</p>
+            <div
+              class="estado-badge"
+              [class.disponible]="disponible()"
+              [class.no-disponible]="!disponible()"
+            >
+              {{ disponible() ? '✓ Disponible' : '✗ No Disponible' }}
+            </div>
+            <p class="tipo-vehiculo">
+              Vehículo: <strong>{{ p.tipoVehiculo }}</strong>
+            </p>
+          </div>
+          <button
+            class="btn-toggle"
+            (click)="toggleDisponibilidad()"
+            [disabled]="cambiandoDisponibilidad()"
+            [class.disponible]="disponible()"
+          >
+            {{
+              cambiandoDisponibilidad()
+                ? 'Actualizando...'
+                : disponible()
+                  ? 'Marcar como No Disponible'
+                  : 'Marcar como Disponible'
+            }}
+          </button>
+        }
+      </div>
+
+      <!-- Card de Pedido Actual (Mini Resumen) -->
+      <div class="pedido-actual-card">
+        <h3>📦 Pedido Actual</h3>
+        @if (pedidoActual(); as pedido) {
+          <div class="pedido-resumen">
+            <div class="pedido-id-badge">
+              <span class="label">Pedido:</span>
+              <span class="id">#{{ pedido.id }}</span>
+            </div>
+            <div class="pedido-quick-info">
+              <p><strong>Restaurante:</strong> {{ pedido.restauranteNombre }}</p>
+              <p><strong>Cliente:</strong> {{ pedido.clienteNombre }}</p>
+              <p class="estado-quick">
+                <strong>Estado:</strong>
+                <span [class]="'estado-' + pedido.estado.toLowerCase()">{{ pedido.estado }}</span>
+              </p>
+            </div>
+          </div>
+          <button class="btn-primary btn-ver-detalles" (click)="irAPedidoActual()">
+            Ver Detalles Completos →
+          </button>
+        } @else {
+          <div class="sin-pedido">
+            <div class="sin-pedido-icon">📭</div>
+            <p>No tienes un pedido actualmente en entrega.</p>
+            <p class="hint">Explora los pedidos disponibles para comenzar a trabajar</p>
+          </div>
+        }
+      </div>
+
+      <!-- Estadísticas -->
+      @if (perfil(); as p) {
+        <div class="estadisticas-card">
+          <h3>Mis Estadísticas</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <p class="stat-label">Total Entregas</p>
+              <p class="stat-value">{{ p.totalPedidosEntregados || 0 }}</p>
+            </div>
+            <div class="stat-item">
+              <p class="stat-label">Calificación Promedio</p>
+              <p class="stat-value">{{ p.calificacionPromedio.toFixed(1) || 'N/A' }} ⭐</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Acciones Rápidas -->
+      <div class="acciones-section">
+        <h3>Acciones Rápidas</h3>
+        <div class="acciones-grid">
+          <button class="accion-card" (click)="irAPedidosDisponibles()" [disabled]="!disponible()">
+            <div class="accion-icon">📦</div>
+            <h4>Explorar Pedidos</h4>
+            <p>Buscar y aceptar nuevos pedidos</p>
+          </button>
+          <button class="accion-card" (click)="irAlHistorial()">
+            <div class="accion-icon">📋</div>
+            <h4>Historial</h4>
+            <p>Ver entregas completadas</p>
+          </button>
+          <button class="accion-card" (click)="irAlPerfil()">
+            <div class="accion-icon">👤</div>
+            <h4>Mi Perfil</h4>
+            <p>Configurar mi cuenta</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Loading State -->
+@if (loading()) {
+  <div class="content">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <p>Cargando información...</p>
+    </div>
+  </div>
+}
+
+<app-footer-repartidor></app-footer-repartidor>

@@ -1,0 +1,75 @@
+package com.example.pedidosYA.Validations;
+
+import com.example.pedidosYA.Exceptions.BusinessException;
+import com.example.pedidosYA.Model.*;
+import com.example.pedidosYA.Repository.ProductoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
+
+@Component
+public class ProductoValidations {
+
+    @Autowired
+    ProductoRepository productoRepository;
+
+    public void validarNombreProductoExistente (String nombre){
+        if(!productoRepository.existsByNombre(nombre)){
+            throw new BusinessException("El nombre de este producto no existe");
+        }
+    }
+
+    public void validarNombreProductoNoDuplicado(Long id, String nombre)throws BusinessException{
+        Producto p = productoRepository.findByNombre(nombre);
+        if (p != null && p.getId() != id) {
+            throw new BusinessException("El nombre ya pertenece a otro restaurante.");
+        }
+    }
+
+    public void validarProductoPerteneceARestaurante(Long idRestaurante, Producto producto){
+        if (!producto.getRestaurante().getId().equals(idRestaurante)) {
+            throw new BusinessException("El producto no pertenece al restaurante elegido");
+        }
+    }
+
+    public void validarProductoEnRestaurante(Restaurante restaurante, Producto producto){
+        if(!restaurante.getMenu().contains(producto)){
+            throw new BusinessException("El restaurante no contiene este producto");
+        }
+    }
+
+    public void validarProductoNoAsociadoAPedidos(Producto producto, Restaurante restaurante) {
+        List<Pedido> pedidos = restaurante.getPedidos();
+
+        for (Pedido pedido : pedidos) {
+            for (ProductoPedido productoPedido : pedido.getProductosPedidos()) {
+                if (productoPedido.getProducto().getId().equals(producto.getId()) && (!pedido.getEstado().equals(EstadoPedido.CANCELADO) || !pedido.getEstado().equals(EstadoPedido.ENTREGADO))) {
+                    throw new BusinessException("No se puede eliminar el producto porque está asociado a pedidos del restaurante.");
+                }
+            }
+        }
+    }
+
+    public void validarListaVacia (Set<Producto> lista){
+        if (lista.isEmpty()) {
+            throw new BusinessException("No hay productos cargados actualmente");
+        }
+    }
+
+    public void validarProductoContieneRestaurante (Set<Producto> menu, String nombre){
+        if (menu.stream()
+                .anyMatch(p -> p.getNombre().equalsIgnoreCase(nombre))) {
+            throw new BusinessException("Ya existe un producto con ese nombre en el menú.");
+        }
+    }
+
+    public void validarProductoContieneRestaurantePorNombre (Set<Producto> menu, Producto producto){
+        if (menu.stream()
+                .anyMatch(p -> p.getNombre().equalsIgnoreCase(producto.getNombre()) && p.getId() != producto.getId())) {
+            throw new BusinessException("Ya existe un producto con ese nombre en el menú.");
+        }
+    }
+
+}

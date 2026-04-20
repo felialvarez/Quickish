@@ -1,0 +1,147 @@
+package com.example.pedidosYA.Controller;
+
+import com.example.pedidosYA.DTO.ClienteDTO.ModificarDTO;
+import com.example.pedidosYA.DTO.ClienteDTO.ResponseDTO;
+import com.example.pedidosYA.DTO.RepartidorDTO.RepartidorDetailDTO;
+import com.example.pedidosYA.DTO.RepartidorDTO.RepartidorResumenDTO;
+import com.example.pedidosYA.DTO.ReseniaDTO.ReseniaDetailDTO;
+import com.example.pedidosYA.DTO.ReseniaDTO.ReseniaResumenDTO;
+import com.example.pedidosYA.DTO.RestauranteDTO.*;
+import com.example.pedidosYA.Service.ClienteService;
+import com.example.pedidosYA.Service.RepartidorService;
+import com.example.pedidosYA.Service.ReseniaService;
+import com.example.pedidosYA.Service.RestauranteService;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Set;
+
+
+@RestController
+@RequestMapping("/admin")
+@DiscriminatorValue("ADMIN")
+public class AdminController {
+
+    @Autowired
+    private ClienteService clienteService;
+    @Autowired
+    private RestauranteService restauranteService;
+    @Autowired
+    private ReseniaService reseniaService;
+    @Autowired
+    private RepartidorService repartidorService;
+
+    @GetMapping("/clientes")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ResponseDTO>> listAllClientes(){
+        return ResponseEntity.ok(clienteService.listAll());
+    }
+
+    @DeleteMapping("/clientes/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDTO> deleteCliente(@PathVariable Long id){
+        return ResponseEntity.ok(clienteService.eliminar(id));
+    }
+
+    @PutMapping ("/clientes/{usuario}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> modificarCliente (@PathVariable String usuario, @Valid @RequestBody ModificarDTO modificarDTO){
+        clienteService.modificarUsuarioNombreAdmin(usuario, modificarDTO);
+        return ResponseEntity.status(HttpStatus.OK).body("Usuario y/o Nombre cambiados con exito!");
+    }
+
+    @GetMapping("/restaurantes")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Set<RestauranteResponseDTO>> listAllRestaurantes(){
+        return ResponseEntity.ok(restauranteService.findAllRestaurantesAdmin());
+    }
+
+    @DeleteMapping("/restaurantes/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RestauranteResponseDTO> deleteRestaurante(@PathVariable Long id){
+        return ResponseEntity.ok(restauranteService.eliminarRestaurante(id));
+    }
+
+    @PutMapping ("/restaurantes/{usuario}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> modificarRestaurante (@PathVariable String usuario, @Valid @RequestBody RestauranteModificarDTO restauranteModificarDTO){
+        restauranteService.modificarUsuarioNombreRestauranteAdmin(usuario, restauranteModificarDTO);
+        return ResponseEntity.status(HttpStatus.OK).body("Usuario y/o Nombre cambiados con exito!");
+    }
+
+    @DeleteMapping("/eliminar-resenia/{idResenia}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> eliminarResenia(@PathVariable Long idResenia)
+    {
+        reseniaService.eliminarResenia(idResenia);
+        return ResponseEntity.status(HttpStatus.OK).body("Reseña eliminada con id: "+idResenia);
+    }
+
+    @GetMapping("/ver-resenias-restaurante/{idRestaurante}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ReseniaDetailDTO>> verResenias(@PathVariable Long idRestaurante)
+    {
+        return ResponseEntity.status(HttpStatus.OK).body(reseniaService.verReseniasAdmin(idRestaurante));
+    }
+
+    @GetMapping("/restaurantes/pendientes")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<RestauranteEstadoDTO>> getPendientes() {
+        return ResponseEntity.ok(restauranteService.getRestaurantesPendientes());
+    }
+
+    @GetMapping("/restaurantes/rechazados")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<RestauranteEstadoDTO>> getRechazados() {
+        return ResponseEntity.ok(restauranteService.getRestaurantesRechazados());
+    }
+
+    @GetMapping("/restaurantes/pendientes/count")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Long> countPendientes() {
+        return ResponseEntity.ok(restauranteService.countPendientes());
+    }
+
+    @PutMapping("/restaurantes/{id}/aprobar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> aprobar(@PathVariable Long id) {
+
+            RestauranteEstadoDTO dto = restauranteService.aprobarRestaurante(id);
+            return ResponseEntity.ok("Restaurante aprobado exitosamente");
+
+    }
+
+    @PutMapping("/restaurantes/{id}/rechazar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> rechazar(@PathVariable Long id, @Valid @RequestBody RechazarRestauranteDTO dto) {
+
+            RestauranteEstadoDTO result = restauranteService.rechazarRestaurante(id, dto);
+            return ResponseEntity.ok("Restaurante rechazado");
+
+    }
+
+    // Endpoints de Repartidores
+    @GetMapping("/repartidores")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<RepartidorResumenDTO>> listarRepartidores() {
+        return ResponseEntity.ok(repartidorService.listarTodos());
+    }
+
+    @GetMapping("/repartidores/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RepartidorDetailDTO> verRepartidor(@PathVariable Long id) {
+        return ResponseEntity.ok(repartidorService.obtenerRepartidorPorIdAdmin(id));
+    }
+
+    @DeleteMapping("/repartidores/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RepartidorResumenDTO> eliminarRepartidor(@PathVariable Long id) {
+        return ResponseEntity.ok(repartidorService.eliminarRepartidor(id));
+    }
+}

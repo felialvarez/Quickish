@@ -1,0 +1,216 @@
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { Header } from '../../components/header/header';
+import { FooterCliente } from '../../components/footer/footer';
+import { AuthService } from '../../../../core/services/auth-service';
+import { ClienteService } from '../../../../core/services/cliente.service';
+import { PerfilUsuario } from '../../../../core/models/app.models';
+
+@Component({
+  selector: 'app-perfil',
+  imports: [Header, FooterCliente, CommonModule, ReactiveFormsModule],
+  templateUrl: './perfil.html',
+  styleUrl: './perfil.css',
+})
+export class Perfil implements OnInit {
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private clienteService = inject(ClienteService);
+
+  perfilForm!: FormGroup;
+  usuario = signal<PerfilUsuario | null>(null);
+  loading = signal(false);
+  mostrarModalConfirmacion = signal(false);
+  mensajeError = '';
+  tipoMensaje: 'success' | 'error' | '' = '';
+
+  // Modal de alerta genérico
+  mostrarModalAlerta = false;
+  tituloAlerta = '';
+  mensajeAlerta = '';
+  tipoAlerta: 'info' | 'warning' | 'error' | 'success' = 'info';
+
+  ngOnInit() {
+    this.initForm();
+    this.cargarDatosUsuario();
+  }
+
+  initForm() {
+    this.perfilForm = this.fb.nonNullable.group({
+      nombre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30)]],
+      usuario: [
+        { value: '', disabled: true },
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(18),
+          Validators.pattern(/^[a-zA-Z0-9]+$/),
+        ],
+      ],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      contrasenia: ['', [Validators.required, Validators.minLength(6)]],
+    });
+  }
+
+  cargarDatosUsuario() {
+    this.loading.set(true);
+
+    const token = localStorage.getItem('token');
+    const currentUser = this.authService.currentUser();
+
+    // Verificar expiración del token
+    if (currentUser) {
+      const now = Math.floor(Date.now() / 1000);
+      const exp = currentUser.exp;
+
+      if (exp) {
+        const timeLeft = exp - now;
+
+        if (timeLeft <= 0) {
+          localStorage.removeItem('token');
+          this.mostrarAlerta(
+            'Sesión expirada',
+            'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+            'warning'
+          );
+          setTimeout(() => this.router.navigate(['/login']), 2000);
+          return;
+        }
+      }
+    }
+
+    // Verificar que el usuario esté autenticado
+    if (!this.authService.isAuthenticated() || !token) {
+      this.mostrarAlerta('Acceso denegado', 'Debes iniciar sesión para ver tu perfil.', 'warning');
+      setTimeout(() => this.router.navigate(['/login']), 2000);
+      return;
+    }
+
+    // Obtener datos del perfil desde la API
+    this.clienteService.obtenerPerfil().subscribe({
+      next: (datosUsuario) => {
+        this.usuario.set(datosUsuario);
+        // Mapear nombreYapellido a nombre para el formulario
+        this.perfilForm.patchValue({
+          nombre: datosUsuario.nombreYapellido,
+          usuario: datosUsuario.usuario,
+          email: datosUsuario.email,
+        });
+        this.loading.set(false);
+      },
+      error: (error) => {
+        this.loading.set(false);
+
+        // Intentar usar datos del token como fallback
+        const currentUser = this.authService.currentUser();
+        if (currentUser) {
+          const datosBasicos: PerfilUsuario = {
+            id: currentUser.id,
+            nombreYapellido: currentUser.nombre,
+            usuario: currentUser.usuario,
+            email: currentUser.email,
+          };
+          this.usuario.set(datosBasicos);
+          this.perfilForm.patchValue({
+            nombre: datosBasicos.nombreYapellido,
+            usuario: datosBasicos.usuario,
+            email: datosBasicos.email,
+          });
+        } else {
+          // Si no hay token válido, redirigir al login
+          localStorage.removeItem('token');
+          this.mostrarAlerta(
+            'Sesión expirada',
+            'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+            'warning'
+          );
+          setTimeout(() => this.router.navigate(['/login']), 2000);
+        }
+      },
+    });
+  }
+
+  onSubmit() {
+    if (this.perfilForm.valid) {
+      this.mostrarModalConfirmacion.set(true);
+    } else {
+      this.mensajeError =
+        'Por favor, completa todos los campos correctamente. La contraseña es requerida para confirmar los cambios.';
+      this.tipoMensaje = 'error';
+      setTimeout(() => {
+        this.mensajeError = '';
+        this.tipoMensaje = '';
+      }, 5000);
+    }
+  }
+
+  confirmarActualizacion() {
+    this.mostrarModalConfirmacion.set(false);
+    this.actualizarPerfil();
+  }
+
+  cancelarActualizacion() {
+    this.mostrarModalConfirmacion.set(false);
+  }
+
+  actualizarPerfil() {
+    this.loading.set(true);
+    const datosActualizados = {
+      nombreYapellido: this.perfilForm.value.nombre,
+      email: this.perfilForm.value.email,
+      contraseniaActual: this.perfilForm.value.contrasenia,
+    };
+
+    // Llamada real al backend
+    this.clienteService.actualizarPerfil(datosActualizados).subscribe({
+      next: (mensaje) => {
+        this.loading.set(false);
+        this.mostrarAlerta(
+          'Perfil actualizado',
+          mensaje || 'Tu perfil se actualizó correctamente',
+          'success'
+        );
+        // Recargar los datos del perfil después de actualizar
+        this.cargarDatosUsuario();
+      },
+      error: (error) => {
+        this.loading.set(false);
+
+        // Mostrar error más específico
+        let mensaje = 'Error al actualizar el perfil.';
+        if (error.error && error.error.message) {
+          mensaje = error.error.message;
+        } else if (error.status === 400) {
+          mensaje = 'Datos inválidos. Verifica que todos los campos estén correctos.';
+        } else if (error.status === 403) {
+          mensaje = 'No tienes permisos para actualizar este perfil.';
+        }
+
+        this.mostrarAlerta('Error al actualizar', mensaje + ' Inténtalo de nuevo.', 'error');
+      },
+    });
+  }
+
+  navegarA(ruta: string) {
+    this.router.navigate([ruta]);
+  }
+
+  // Métodos para modal de alerta
+  mostrarAlerta(
+    titulo: string,
+    mensaje: string,
+    tipo: 'info' | 'warning' | 'error' | 'success' = 'info'
+  ) {
+    this.tituloAlerta = titulo;
+    this.mensajeAlerta = mensaje;
+    this.tipoAlerta = tipo;
+    this.mostrarModalAlerta = true;
+  }
+
+  cerrarModalAlerta() {
+    this.mostrarModalAlerta = false;
+  }
+}

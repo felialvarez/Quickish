@@ -1,0 +1,208 @@
+<app-header></app-header>
+
+<div class="content">
+  <div class="container">
+    <h2>Gestión de Métodos de Pago</h2>
+
+    <!-- Mensaje de éxito o error -->
+    @if (mensajeError && tipoMensaje) {
+    <div
+      class="alert-message"
+      [class.alert-success]="tipoMensaje === 'success'"
+      [class.alert-error]="tipoMensaje === 'error'"
+    >
+      <span class="alert-icon">{{ tipoMensaje === 'success' ? '✓' : '⚠' }}</span>
+      <span class="alert-text">{{ mensajeError }}</span>
+    </div>
+    }
+
+    <div class="tarjetas-section">
+      <div class="tarjetas-main">
+        <div class="actions-bar">
+          <button class="btn-nuevo" (click)="abrirPanel()">
+            <span class="icon">+</span> Agregar Medio de Pago
+          </button>
+        </div>
+
+        <h3>Tarjetas ({{ tarjetas().length }})</h3>
+
+        @if (cargando()) {
+        <div class="loading"><div class="spinner"></div></div>
+        } @if (!cargando() && tarjetas().length === 0) {
+        <p class="empty">No tienes tarjetas registradas</p>
+        } @if (!cargando() && tarjetas().length > 0) {
+        <div class="tarjetas-list">
+          @for (tarjeta of tarjetas(); track tarjeta.id) {
+          <div class="tarjeta-item">
+            <div class="tarjeta-header">
+              <span class="tarjeta-tipo">💳 {{ tarjeta.tipo }}</span>
+            </div>
+            <div class="tarjeta-info">
+              <p class="tarjeta-numero">{{ tarjeta.numero }}</p>
+              <div class="tarjeta-meta">
+                <span class="titular-label">{{ tarjeta.titular }}</span>
+                <span class="vence-badge">Vence: {{ tarjeta.vencimiento }}</span>
+              </div>
+            </div>
+            <button (click)="eliminarTarjeta(tarjeta.id)" class="btn-delete-card">🗑️</button>
+          </div>
+          }
+        </div>
+        }
+      </div>
+
+      @if (panelAbierto()) {
+      <div class="tarjeta-form-panel">
+        <div class="panel-header">
+          <h4>Nuevo Método de Pago</h4>
+          <button class="close-btn" (click)="cerrarPanel()">×</button>
+        </div>
+
+        <form class="panel-content" [formGroup]="formularioTarjeta" (ngSubmit)="guardarTarjeta()">
+          <div class="form-section">
+            <div class="form-group">
+              <label for="tipo">Tipo de Tarjeta *</label>
+              <select id="tipo" formControlName="tipo">
+                <option value="">Selecciona tipo</option>
+                <option value="CREDITO">Crédito</option>
+                <option value="DEBITO">Débito</option>
+              </select>
+              @if (formularioTarjeta.get('tipo')?.invalid && formularioTarjeta.get('tipo')?.touched)
+              {
+              <small class="error">Tipo de tarjeta requerido</small>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="numero">Número de Tarjeta *</label>
+              <input
+                type="text"
+                id="numero"
+                formControlName="numero"
+                placeholder="1234567890123456"
+                maxlength="16"
+                pattern="[0-9]*"
+                inputmode="numeric"
+              />
+              @if (formularioTarjeta.get('numero')?.invalid &&
+              formularioTarjeta.get('numero')?.touched) {
+              <small class="error">Debe tener 16 dígitos</small>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="titular">Nombre del Titular *</label>
+              <input
+                type="text"
+                id="titular"
+                formControlName="titular"
+                placeholder="JUAN PEREZ"
+                maxlength="100"
+              />
+              @if (formularioTarjeta.get('titular')?.invalid &&
+              formularioTarjeta.get('titular')?.touched) {
+              <small class="error">Titular requerido (máx. 100 caracteres)</small>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="vencimiento">Vencimiento (MM/YY) *</label>
+                <input
+                  type="text"
+                  id="vencimiento"
+                  formControlName="vencimiento"
+                  placeholder="01/28"
+                  maxlength="5"
+                  pattern="[0-9/]*"
+                  (input)="formatearVencimiento($event)"
+                />
+                @if (formularioTarjeta.get('vencimiento')?.hasError('pattern') &&
+                formularioTarjeta.get('vencimiento')?.touched) {
+                <small class="error">Formato: MM/YY</small>
+                } @if (formularioTarjeta.get('vencimiento')?.hasError('vencimientoAntiguo') &&
+                formularioTarjeta.get('vencimiento')?.touched) { <<<<<<< HEAD
+                <small class="error">La tarjeta debe vencer a partir de 01/26</small>
+                =======
+                <small class="error">La tarjeta debe vencer a partir de 01/28</small>
+                >>>>>>> Tomas } @if (formularioTarjeta.get('vencimiento')?.hasError('vencida') &&
+                formularioTarjeta.get('vencimiento')?.touched) {
+                <small class="error">La tarjeta está vencida</small>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="cvv">CVV *</label>
+                <input
+                  type="text"
+                  id="cvv"
+                  formControlName="cvv"
+                  placeholder="123"
+                  maxlength="3"
+                  pattern="[0-9]*"
+                  inputmode="numeric"
+                />
+                @if (formularioTarjeta.get('cvv')?.invalid && formularioTarjeta.get('cvv')?.touched)
+                {
+                <small class="error">3 dígitos</small>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn-guardar"
+              [disabled]="formularioTarjeta.invalid || cargando()"
+            >
+              Agregar Tarjeta
+            </button>
+            <button type="button" class="btn-cancelar" (click)="cerrarPanel()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación -->
+@if (confirmandoEliminacion()) {
+<div class="modal-overlay" (click)="cancelarEliminacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirmar eliminación</h3>
+      <button class="close-btn" (click)="cancelarEliminacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Estás seguro de que deseas eliminar esta tarjeta?</p>
+      <p class="modal-warning">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-confirmar" (click)="confirmarEliminacion()">Eliminar</button>
+      <button class="btn-cancelar-modal" (click)="cancelarEliminacion()">Cancelar</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Modal de alerta -->
+@if (mostrarModalAlerta) {
+<div class="modal-overlay" (click)="cerrarModalAlerta()">
+  <div class="modal-content-alerta {{ tipoAlerta }}" (click)="$event.stopPropagation()">
+    <div class="modal-header-alerta">
+      <h3>{{ tituloAlerta }}</h3>
+      <button class="close-btn-alerta" (click)="cerrarModalAlerta()">×</button>
+    </div>
+    <div class="modal-body-alerta">
+      <p>{{ mensajeAlerta }}</p>
+    </div>
+    <div class="modal-actions-alerta">
+      <button class="btn-aceptar" (click)="cerrarModalAlerta()">Aceptar</button>
+    </div>
+  </div>
+</div>
+}
+
+<app-footer-cliente></app-footer-cliente>

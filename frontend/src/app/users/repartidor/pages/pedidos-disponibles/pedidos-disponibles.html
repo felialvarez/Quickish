@@ -1,0 +1,102 @@
+<app-header></app-header>
+<div class="content">
+  <div class="pedidos-container">
+    <h2>Pedidos Disponibles</h2>
+    <p>Selecciona un pedido para aceptar y comenzar la entrega</p>
+
+    @if (loading()) {
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <p>Cargando pedidos disponibles...</p>
+      </div>
+    } @else {
+      <div class="pedidos-section">
+        <!-- Filtros -->
+        <div class="filtros">
+          <button class="filtro-btn" [class.active]="!filtroEstado()" (click)="cambiarFiltro('')">
+            Todos ({{ pedidos().length }})
+          </button>
+        </div>
+
+        @if (pedidosFiltrados().length > 0) {
+          <div class="pedidos-lista">
+            @for (pedido of pedidosFiltrados(); track pedido.id) {
+              <div class="pedido-card">
+                <div class="pedido-header">
+                  <div class="pedido-id">
+                    <h3>#{{ pedido.id }}</h3>
+                    <span class="estado-badge" [class.pendiente]="pedido.estado === 'PENDIENTE'">
+                      {{ pedido.estado }}
+                    </span>
+                  </div>
+                  <div class="pedido-total">
+                    <p class="label">Total</p>
+                    <p class="valor">${{ pedido.total }}</p>
+                  </div>
+                </div>
+
+                <div class="pedido-detalles">
+                  <div class="detalle-item">
+                    <span class="label">🏪 Restaurante:</span>
+                    <span class="valor">{{ pedido.restauranteNombre }}</span>
+                  </div>
+                  <div class="detalle-item">
+                    <span class="label">👤 Cliente:</span>
+                    <span class="valor">{{ pedido.clienteNombre }}</span>
+                  </div>
+                  <div class="detalle-item">
+                    <span class="label">📍 Desde Restaurante:</span>
+                    <span class="valor">{{ pedido.restauranteDireccion }}</span>
+                  </div>
+                  <div class="detalle-item">
+                    <span class="label">🚚 Hacia Cliente:</span>
+                    <span class="valor">{{ pedido.direccionEntrega }}</span>
+                  </div>
+                  <div class="detalle-item">
+                    <span class="label">📅 Fecha del Pedido:</span>
+                    <span class="valor">{{ pedido.fechaPedido | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                </div>
+
+                <button
+                  class="btn-aceptar"
+                  (click)="aceptarPedido(pedido.id)"
+                  [disabled]="aceptandoPedido() === pedido.id"
+                >
+                  {{ aceptandoPedido() === pedido.id ? '⏳ Aceptando...' : '✓ Aceptar Pedido' }}
+                </button>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="sin-pedidos">
+            <div class="sin-pedidos-icon">📭</div>
+            <h3>No hay pedidos disponibles</h3>
+            <p>Vuelve más tarde para ver nuevos pedidos</p>
+            <button class="btn-volver" (click)="volverAlPanel()">Volver al Panel</button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal de Error -->
+@if (mostrarModalError()) {
+  <div class="modal-overlay" (click)="cerrarModalError()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ tituloError() }}</h3>
+        <button class="close-btn" (click)="cerrarModalError()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>{{ mensajeError() }}</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-aceptar-modal" (click)="cerrarModalError()">Entendido</button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-footer-repartidor></app-footer-repartidor>
