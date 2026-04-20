@@ -44,12 +44,31 @@ ___
 
    - **Clona el repositorio del backend:**
      ```bash
-     git clone https://github.com/jopiatomas/proyecto-final
+     git clone https://github.com/felialvarez/quickish.git 
+     cd quickish
      ```
-   - **Ingresa a la carpeta del backend:**
+   - **Backend (Spring Boot)**
      ```bash
-     cd proyecto-final
+     cd backend 
+     ./mvnw spring-boot:run
      ```
+     El backend se ejecuta en:
+     ```bash
+     http://localhost:8080
+     ```
+   - **Frontend (Angular)**
+     ```bash
+     cd frontend
+     npm install 
+     npm start
+     ```
+     El frontend se ejecuta en:
+     ```bash
+     http://localhost:4200
+     ```
+     > **Importante:** Asegúrate de tener Java JDK instalado y las extensiones de Java configuradas en Visual Studio Code.  
+     > Además, el backend debe estar corriendo antes de utilizar la aplicación frontend para que el sistema funcione correctamente.
+     
    - **Configura la conexión a la base de datos MySQL:**
      - Crea una base de datos nueva en MySQL (por ejemplo, `quickish_db`).
      - Abre el archivo `src/main/resources/application.properties` en el backend.
@@ -59,15 +78,6 @@ ___
        spring.datasource.username=TU_USUARIO
        spring.datasource.password=TU_PASSWORD
        ```
-   - **Ejecuta el backend en Visual Studio Code:**
-     - Abre una nueva ventana en VS Code.
-     - Selecciona `File > Open Folder...` y elige la carpeta del backend.
-     - Busca el archivo principal `PedidosYaApplication.java`.
-     - Haz clic en el botón de "Run" (▶️) sobre la función `main` o en la barra superior.
-     - El backend se compilará y ejecutará automáticamente en la consola de VS Code.
-
-     > **Importante:** Asegúrate de tener Java JDK instalado y las extensiones de Java configuradas en Visual Studio Code.  
-     > Además, el backend debe estar corriendo antes de utilizar la aplicación frontend para que el sistema funcione correctamente.
 
 5. **¡Listo! Ya podés utilizar Quickish sin problemas.**
 ___
