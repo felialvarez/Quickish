@@ -6,10 +6,10 @@ Quickish es una aplicación de pedidos de comida a domicilio en proceso de desar
 ___
 
 ## Equipo de trabajo
+- [Felipe Alvarez](https://github.com/felialvarez)
 - [Tomas Jopia](https://github.com/jopiatomas)
 - [Lucas Monti](https://github.com/Lucasmonti)
 - [Bruno Logghe](https://github.com/brunologghe)
-- [Felipe Alvarez](https://github.com/felialvarez)
 ___
 
 # Requisitos previos
